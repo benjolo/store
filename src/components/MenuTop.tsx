@@ -22,6 +22,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { GiAbdominalArmor } from "react-icons/gi";
 import { Link } from "react-router-dom";
 import { logStore } from "../store/logStore";
+import { useStore } from "../store/store";
 
 const useStyles = createStyles((theme) => ({
   link: {
@@ -97,7 +98,8 @@ const MenuTop = () => {
     useDisclosure(false);
   const [linksOpened, { toggle: toggleLinks }] = useDisclosure(false);
   const { classes, theme } = useStyles();
-  const log = logStore((state: any) => state.log);
+  const log = logStore();
+  const store = useStore();
 
   return (
     <Box>
@@ -120,7 +122,7 @@ const MenuTop = () => {
             </Link>
           </Group>
 
-          {log === false ? (
+          {log.log === false ? (
             <Group className={classes.hiddenMobile}>
               <Link to="/login">
                 <Button variant="default">Log in</Button>
@@ -133,7 +135,7 @@ const MenuTop = () => {
             <Group className={classes.hiddenMobile}>
               <Button
                 variant="default"
-                onClick={() => logStore.setState({ log: false })}
+                onClick={() => {logStore.setState({ log: false }); log.deleteUser(); store.emptyColumns();}}
               >
                 Log out
               </Button>
@@ -177,7 +179,7 @@ const MenuTop = () => {
             color={theme.colorScheme === "dark" ? "dark.5" : "gray.1"}
           />
 
-          {log === false ?
+          {log.log === false ?
             <Group position="center" grow pb="xl" px="md">
             <Link to="/login" onClick={closeDrawer}>
               <Button variant="default">Log in</Button>
@@ -190,7 +192,7 @@ const MenuTop = () => {
           <Group position="center" grow pb="xl" px="md">
             <Button
               variant="default"
-              onClick={() => {logStore.setState({ log: false }); closeDrawer()}}
+              onClick={() => {logStore.setState({ log: false }); closeDrawer(); log.deleteUser(); store.emptyColumns();}}
             >
               Log out
             </Button>

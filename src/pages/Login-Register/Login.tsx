@@ -1,4 +1,4 @@
-import { logStore } from "../../store/logStore";
+import { logStore, User } from "../../store/logStore";
 import { useNavigate } from "react-router-dom";
 import { useToggle, upperFirst } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
@@ -21,6 +21,7 @@ import { Item, useStore } from "../../store/store";
 
 const Login = ({ page }: { page: string }) => {
   const logStorage: any = logStore();
+  const store = useStore()
   const navigate = useNavigate();
   const [type, toggle] = useToggle(["login", "register"]);
   const form = useForm({
@@ -45,7 +46,7 @@ const Login = ({ page }: { page: string }) => {
     fetch("http://localhost:3001/users")
       .then((res) => res.json())
       .then((data) => {
-        data.map((user: any) => {
+        data.map((user: User) => {
           console.log(user);
           if (
             user.username === form.values.username &&
@@ -54,7 +55,7 @@ const Login = ({ page }: { page: string }) => {
             logStorage.setUser(user);
             logStorage.setLog(true);
             navigate(`/${page}`);
-            console.log("Welcome Back!");
+            console.log("Welcome Back!", user);
           } else {
             console.log("User not found");
           }

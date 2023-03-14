@@ -61,14 +61,14 @@ const defaultInventory: Col[] = [
     },
     {
       id: 9,
-      name: "Shield",
+      name: "Spell",
       value: [],
       limit: 1,
       type: "wearable",
     },
     {
       id: 10,
-      name: "Spell",
+      name: "Shield",
       value: [],
       limit: 1,
       type: "wearable",
@@ -112,6 +112,7 @@ interface Store {
     addItemsInCol: (items: Item[], colId: number) => void;
     addItemAndUpdateCol: (item: Item, colId: number) => void;
     removeItemAndUpdateCol: (item: Item, colId: number) => void;
+    emptyColumns: () => void;
 }
 
 export const useStore = create<Store>((set, get) => ({
@@ -119,15 +120,14 @@ export const useStore = create<Store>((set, get) => ({
     //column with default values
     columns: defaultInventory,
     //function to load items in a column, if exist update the column, if not create a new column
-
+    
     loadItemsInInventory: (items: Item[], colName: string, limit: number, type: string) => set((state) => ({ columns: [...state.columns, { id: state.columns.length + 1, name: colName, value: items, limit: limit, type: type }] })),
     checkIfItemExists: (item: Item, inv: Item[]) => inv.find((i) => i.specs.name === item.specs.name),
     //att Items in col
     addItemsInCol: (items: Item[], colId: number) => set((state) => ({ columns: state.columns.map((col) => col.id === colId + 1 ? { ...col, value: [...col.value, ...items] } : col)})),
     addItemAndUpdateCol: (item: Item, colId: number) => set((state) => ({ columns: state.columns.map((col) => col.id === colId + 1 ? { ...col, value: col.value.length != 0 ? col.limit > col.value.length ? [...col.value, item] : [...col.value] : [item]} : col)})),
     removeItemAndUpdateCol: (item: Item, colId: number) => set((state) => ({ columns: state.columns.map((col) => col.id === colId + 1 ? { ...col, value: col.value.filter((it: Item) => it.specs.name !== item.specs.name) } : col)})),
-    //add item sulla dest and remove item dalla source col
-    
+    emptyColumns: () => set((state) => ({ columns: defaultInventory })),
 
 
 }));

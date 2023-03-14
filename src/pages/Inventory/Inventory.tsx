@@ -61,12 +61,13 @@ const ItemsInCol = ({
 }) => {
   const { classes, cx } = useStyles();
   return (
-    <Draggable key={item.id} index={index} draggableId={item.specs.name}>
+    <Draggable key={item.id} index={index} draggableId={item.specs.name} >
       {(provided: any, snapshot: any) => (
         <Image
           src={item.img}
-          caption={item.specs.name}
-          maw={100}
+          // caption={item.specs.name}
+          bg="transparent"
+          maw={140}
           mx="auto"
           radius="md"
           className={cx(classes.item, {
@@ -76,12 +77,6 @@ const ItemsInCol = ({
           {...provided.dragHandleProps}
           ref={provided.innerRef}
         >
-          <div style={{ height: "1vh", backgroundColor: "#ffffff61" }}>
-            <Text size={10}>{item.specs.name}</Text>
-            <Text size={10} color="dimmed">
-              Type: {item.type}
-            </Text>
-          </div>
         </Image>
       )}
     </Draggable>
@@ -92,19 +87,20 @@ const Inventory = () => {
   const { classes, cx } = useStyles();
   const theme = useMantineTheme();
   const store = useStore();
+  const log:any = logStore();
+  const equipment:Col[] = log.user.character.equipment;
 
+  
   useEffect(() => {
-    fetch("http://localhost:3001/items")
-      .then((res) => res.json())
-      .then((result) => {
-        store.addItemsInCol(result, 0);
-      });
-    fetch("http://localhost:3001/bag")
-      .then((res) => res.json())
-      .then((result) => {
-        store.addItemsInCol(result, 10)
-      });
+    equipment.map((col:Col, index:number) => {
+      let num = store.columns.findIndex((e) => e.name === col.name);
+      store.addItemsInCol(col.value, num);
+    })
   }, []);
+
+  const PushInBack = () => {
+    
+  };
 
   console.log("colonne", store.columns);
   return (
@@ -123,23 +119,11 @@ const Inventory = () => {
           onDragEnd={(result) => {
             console.log(result);
             if (!result.destination) return;
-            // handlers.reorder({
-            //   from: result.source.index,
-            //   to: result.destination.index,
-            // });
             const sourceCol: number = store.columns.findIndex(
               (e) => e.name === result.source.droppableId
             );
             const destCol: number = store.columns.findIndex(
               (e) => e.name === result.destination?.droppableId
-            );
-            console.log(
-              "source",
-              sourceCol,
-              store.columns[sourceCol].name,
-              "dest",
-              destCol,
-              store.columns[destCol].name
             );
             const item = store.columns[sourceCol].value.find(
               (e) => e.specs.name === result.draggableId
@@ -149,14 +133,74 @@ const Inventory = () => {
             if (
               store.checkIfItemExists(item, store.columns[destCol].value) ===
                 undefined &&
-              store.columns[destCol].value.length < store.columns[destCol].limit && store.columns[destCol].type === item.type
+              store.columns[destCol].value.length < store.columns[destCol].limit 
             ) {
               store.addItemAndUpdateCol(item, destCol);
               store.removeItemAndUpdateCol(item, sourceCol);
             }
             console.log("colonne", store.columns);
-          }}
-        >
+          }}>
+          {/* {store.columns.map((col, key) => {
+            return (
+            col.type === "inventory" && (
+                <ScrollArea h={BASE_HEIGHT} w={BASE_HEIGHT / 4}>
+                  <Stack sx={{ backgroundColor: "#928b8b59" }}>
+                    <Text color={"white"} align={"center"}>
+                      {col.name.toUpperCase()}
+                    </Text>
+                    <Droppable droppableId={col.name} direction="vertical">
+                      {(provided: any) => (
+                        <div {...provided.droppableProps} ref={provided.innerRef}>
+                          {col.value.map((item, index) => (
+                            <ItemsInCol
+                              item={item}
+                              index={index}
+                              key={index}
+                              type={col.type}
+                            />
+                          ))}
+                          {provided.placeholder}
+                        </div>
+                      )}
+                    </Droppable>
+                  </Stack>
+                </ScrollArea>
+              ) 
+              col.type != "inventory" && (
+                <Stack sx={{ height: BASE_HEIGHT }} spacing="xl">
+                  {store.columns.slice(key, key + 3).map((col, key) => {
+                    return (
+                      <div
+                        key={key}
+                        style={{
+                          backgroundColor: "#928b8b59",
+                          height: getSubHeight(3, px(theme.spacing.md)),
+                        }}
+                      >
+                        <Text color={"white"} align={"center"}>
+                          {col.name.toUpperCase()}
+                        </Text>
+                        <Droppable droppableId={col.name} direction="vertical">
+                          {(provided: any) => (
+                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                              {col.value.map((item, index) => (
+                                <ItemsInCol
+                                  item={item}
+                                  index={index}
+                                  key={index}
+                                  type={col.type}
+                                />
+                              ))}
+                              {provided.placeholder}
+                            </div>
+                          )}
+                        </Droppable>
+                      </div>
+                    );
+                  })}
+                </Stack>
+              ));
+          })} */}
           {store.columns.slice(0, 1).map((col, key) => {
             return (
               <ScrollArea h={BASE_HEIGHT} w={BASE_HEIGHT / 4}>
@@ -187,6 +231,7 @@ const Inventory = () => {
             {store.columns.slice(1, 4).map((col, key) => {
               return (
                 <div
+                  key={key}
                   style={{
                     backgroundColor: "#928b8b59",
                     height: getSubHeight(3, px(theme.spacing.md)),
@@ -218,6 +263,7 @@ const Inventory = () => {
             {store.columns.slice(4, 7).map((col, key) => {
               return (
                 <div
+                  key={key}
                   style={{
                     backgroundColor: "#928b8b59",
                     height: getSubHeight(3, px(theme.spacing.md)),
@@ -249,6 +295,7 @@ const Inventory = () => {
             {store.columns.slice(7, 10).map((col, key) => {
               return (
                 <div
+                  key={key}
                   style={{
                     backgroundColor: "#928b8b59",
                     height: getSubHeight(3, px(theme.spacing.md)),
@@ -303,9 +350,11 @@ const Inventory = () => {
                 </Stack>
               </ScrollArea>
             );
-          })}
+            })}
+          
         </DragDropContext>
       </SimpleGrid>
+      <Button onClick={() => PushInBack()} >Save</Button>
     </Box>
   );
 };
